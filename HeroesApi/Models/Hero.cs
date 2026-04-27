@@ -20,6 +20,9 @@ public class Weapon {
         public int PowerLevel { get; set; }
         public List<string> Powers { get; set; } = new();
         public Weapon Weapon { get; set; } = new();
+
+        [JsonIgnore]
+        public string? InternalNotes { get; set; }
     }
 }
 
