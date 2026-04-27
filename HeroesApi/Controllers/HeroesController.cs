@@ -10,9 +10,29 @@ namespace HeroesApi.Controllers;
 [Route("api/[controller]")]
 public class HeroesController : ControllerBase {
     [HttpGet]
-    public ActionResult<List<Hero>> GetAll() {
-        return Ok(HeroesStore.Heroes);
+    public ActionResult<List<Hero>> GetAll([FromQuery] string? universe = null) {
+        var heroes = HeroesStore.Heroes;
+        if (!string.IsNullOrEmpty(universe)) {
+            if (Enum.TryParse<Universe>(universe, ignoreCase: true, out var selectedUniverse)) {
+                heroes = heroes.Where(h => h.Universe == selectedUniverse).ToList();
+            }
+            else {
+                return Ok(new List<Hero>());
+            }
+        }
+        return Ok(heroes);
     }
+    [HttpGet("search")]
+    public ActionResult<List<Hero>> SearchByName([FromQuery] string name) {
+        if (string.IsNullOrEmpty(name)) {
+            return BadRequest(new { message = "Parameter 'name' is required" });
+        }
+        var results = HeroesStore.Heroes
+            .Where(h => h.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        return Ok(results);
+    }
+
     [HttpGet("{id}")]
     public ActionResult<Hero> GetById(int id) {
         var hero = HeroesStore.Heroes.FirstOrDefault(h => h.Id == id);
